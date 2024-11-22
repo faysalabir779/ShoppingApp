@@ -42,10 +42,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.shoppingapp.R
 import com.example.shoppingapp.presentation.navigation.SignUpRoute
+import com.example.shoppingapp.presentation.view_model.ShoppingAppViewModel
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewModel) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

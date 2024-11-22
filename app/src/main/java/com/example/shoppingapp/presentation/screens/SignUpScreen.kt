@@ -1,5 +1,6 @@
 package com.example.shoppingapp.presentation.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -33,19 +35,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.shoppingapp.R
+import com.example.shoppingapp.domain.model.UserModel
 import com.example.shoppingapp.presentation.navigation.LoginRoute
+import com.example.shoppingapp.presentation.view_model.ShoppingAppViewModel
 
-@Preview(showBackground = true)
 @Composable
-fun SignUpScreen(navController: NavHostController) {
+fun SignUpScreen(navController: NavHostController, viewModel: ShoppingAppViewModel) {
 
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -54,6 +58,9 @@ fun SignUpScreen(navController: NavHostController) {
     var confirmPass by remember { mutableStateOf("") }
 
     var registrationComplete by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val state = viewModel.signUpState.collectAsStateWithLifecycle()
 
     CompleteSignUpBox(
         isOpen = registrationComplete,
@@ -209,7 +216,21 @@ fun SignUpScreen(navController: NavHostController) {
 
             Button(
                 onClick = {
-                    registrationComplete = true
+                    if (firstName.isNotEmpty() && lastName.isNotEmpty() && email.isNotEmpty() && createPass.isNotEmpty()) {
+                        viewModel.createUser(
+                            UserModel(
+                                name = firstName + lastName,
+                                email = email,
+                                password = createPass,
+                            )
+                        )
+                    }
+                    else{
+                        Toast.makeText(context, "Fill All Details", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -219,8 +240,38 @@ fun SignUpScreen(navController: NavHostController) {
                     containerColor = Color(0xFFF68B8B)
                 )
             ) {
-                Text(text = "Signup", fontSize = 18.sp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Signup", fontSize = 18.sp)
+                    if (state.value.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(23.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                    if (state.value.isSuccess.isNotEmpty()) {
+                        registrationComplete = true
+                        viewModel.resetIsSuccess()
+                        firstName = ""
+                        lastName = ""
+                        email = ""
+                        createPass = ""
+                        confirmPass = ""
+                    }
+                    else if (state.value.error.isNotEmpty()){
+                        Toast.makeText(context, "Account Creation Failed", Toast.LENGTH_SHORT)
+                            .show()
+                        viewModel.resetError()
+                    }
+
+                }
             }
+
+
 
             Spacer(modifier = Modifier.height(25.dp))
 
