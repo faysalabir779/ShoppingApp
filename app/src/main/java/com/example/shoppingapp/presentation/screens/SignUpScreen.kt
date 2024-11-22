@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,6 +60,22 @@ fun SignUpScreen(navController: NavHostController, viewModel: ShoppingAppViewMod
 
     var registrationComplete by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    var passwordError by rememberSaveable { mutableStateOf<String?>(null) }
+    var confirmPasswordError by rememberSaveable { mutableStateOf<String?>(null) }
+
+    passwordError = when {
+        createPass.length < 6 -> "Password must be at least 6 characters"
+        createPass.length >= 6 -> "Good to go!"
+        else -> null
+    }
+
+    confirmPasswordError = when {
+        confirmPass.isBlank() -> ""
+        createPass != confirmPass -> "Passwords do not match"
+        createPass == confirmPass -> "Perfect!"
+        else -> null
+    }
 
     val state = viewModel.signUpState.collectAsStateWithLifecycle()
 
@@ -187,6 +204,10 @@ fun SignUpScreen(navController: NavHostController, viewModel: ShoppingAppViewMod
                     focusedBorderColor = Color(0xFF8C8585),
                     unfocusedBorderColor = Color(0xFF8C8585)
                 ),
+                supportingText = {
+
+                    Text(text = passwordError.orEmpty())
+                },
                 shape = RoundedCornerShape(15.dp),
                 placeholder = {
                     Text(text = "Create Password", color = Color(0xFF8C8585))
@@ -206,6 +227,9 @@ fun SignUpScreen(navController: NavHostController, viewModel: ShoppingAppViewMod
                     unfocusedBorderColor = Color(0xFF8C8585)
                 ),
                 shape = RoundedCornerShape(15.dp),
+                supportingText = {
+                    Text(text = confirmPasswordError.orEmpty())
+                },
                 placeholder = {
                     Text(text = "Confirm Password", color = Color(0xFF8C8585))
                 },
@@ -216,7 +240,7 @@ fun SignUpScreen(navController: NavHostController, viewModel: ShoppingAppViewMod
 
             Button(
                 onClick = {
-                    if (firstName.isNotEmpty() && lastName.isNotEmpty() && email.isNotEmpty() && createPass.isNotEmpty()) {
+                    if (firstName.isNotEmpty() && lastName.isNotEmpty() && email.isNotEmpty() && createPass.isNotEmpty() && createPass == confirmPass) {
                         viewModel.createUser(
                             UserModel(
                                 name = firstName + lastName,
@@ -224,8 +248,7 @@ fun SignUpScreen(navController: NavHostController, viewModel: ShoppingAppViewMod
                                 password = createPass,
                             )
                         )
-                    }
-                    else{
+                    } else {
                         Toast.makeText(context, "Fill All Details", Toast.LENGTH_SHORT)
                             .show()
                     }
@@ -262,7 +285,7 @@ fun SignUpScreen(navController: NavHostController, viewModel: ShoppingAppViewMod
                         createPass = ""
                         confirmPass = ""
                     }
-                    else if (state.value.error.isNotEmpty()){
+                    else if (state.value.error.isNotEmpty()) {
                         Toast.makeText(context, "Account Creation Failed", Toast.LENGTH_SHORT)
                             .show()
                         viewModel.resetError()

@@ -156,7 +156,7 @@ fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewMode
                     containerColor = Color(0xFFF68B8B)
                 )
             ) {
-                Text(text = "Signup", fontSize = 18.sp)
+                Text(text = "Login", fontSize = 18.sp)
             }
 
             Spacer(modifier = Modifier.height(25.dp))
