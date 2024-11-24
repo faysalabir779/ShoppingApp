@@ -10,4 +10,6 @@ import kotlinx.coroutines.flow.Flow
 interface ShoppingAppRepo {
 
     suspend fun registerUserWithEmailAndPassword(userModel: UserModel): Flow<ResultState<String>>
+    suspend fun loginUserWithEmailAndPassword(email: String, password: String): Flow<ResultState<String>>
+
 }

@@ -14,14 +14,22 @@ import com.example.shoppingapp.presentation.screens.ProfileScreen
 import com.example.shoppingapp.presentation.screens.SignUpScreen
 import com.example.shoppingapp.presentation.screens.WishListScreen
 import com.example.shoppingapp.presentation.view_model.ShoppingAppViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun App(viewModel: ShoppingAppViewModel) {
+fun App(viewModel: ShoppingAppViewModel, firebaseAuth: FirebaseAuth) {
     val navController = rememberNavController()
+    var startScreen = if (firebaseAuth.currentUser == null) {
+        SubNavigation.LoginSignupScreenRoute
+    } else {
+        SubNavigation.MainHomeScreenRoute
+    }
     NavHost(
         navController = navController,
-        startDestination = SubNavigation.LoginSignupScreenRoute
+        startDestination = startScreen
     ) {
+
+
 
         navigation<SubNavigation.LoginSignupScreenRoute>(startDestination = LoginRoute) {
             composable<LoginRoute> {

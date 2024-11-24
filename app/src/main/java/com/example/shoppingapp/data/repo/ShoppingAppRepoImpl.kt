@@ -1,6 +1,7 @@
 package com.example.shoppingapp.data.repo
 
 import com.example.shoppingapp.common.ResultState
+import com.example.shoppingapp.common.USER_COLLECTION
 import com.example.shoppingapp.domain.model.UserModel
 import com.example.shoppingapp.domain.repo.ShoppingAppRepo
 import com.google.firebase.auth.FirebaseAuth
@@ -24,6 +25,15 @@ class ShoppingAppRepoImpl @Inject constructor(
             firebaseAuth.createUserWithEmailAndPassword(userModel.email, userModel.password)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
+                        firestore.collection(USER_COLLECTION)
+                            .document(task.result.user?.uid.toString()).set(userModel)
+                            .addOnCompleteListener {
+                                if (it.isSuccessful) {
+                                    trySend(ResultState.Success("Success"))
+                                } else {
+                                    trySend(ResultState.Error(it.exception?.message.toString()))
+                                }
+                            }
                         trySend(ResultState.Success("Success"))
                     } else {
                         trySend(ResultState.Error(task.exception?.message.toString()))
@@ -31,6 +41,22 @@ class ShoppingAppRepoImpl @Inject constructor(
 
                 }
             awaitClose {
+                close()
+            }
+        }
+
+    override suspend fun loginUserWithEmailAndPassword(email: String, password: String): Flow<ResultState<String>> =
+        callbackFlow {
+            trySend(ResultState.Loading)
+            firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener{
+                if (it.isSuccessful){
+                    trySend(ResultState.Success("Success"))
+                }else{
+                    trySend(ResultState.Error(it.exception?.message.toString()))
+                }
+            }
+
+            awaitClose{
                 close()
             }
         }
