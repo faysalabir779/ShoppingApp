@@ -1,6 +1,5 @@
 package com.example.shoppingapp.presentation.screens
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,9 +19,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -38,8 +42,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -59,7 +65,7 @@ fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewMode
     val loginState = viewModel.loginState.collectAsStateWithLifecycle().value
 
     var isSuccessHandled by remember { mutableStateOf(false) }
-    if (loginState.isSuccess == "Success" && !isSuccessHandled){
+    if (loginState.isSuccess == "Success" && !isSuccessHandled) {
         navController.navigate(SubNavigation.MainHomeScreenRoute)
         isSuccessHandled = true
         Toast.makeText(context, "Login Successfully", Toast.LENGTH_SHORT).show()
@@ -123,7 +129,6 @@ fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewMode
             Spacer(modifier = Modifier.height(35.dp))
 
 
-
             //Email
             OutlinedTextField(
                 value = email,
@@ -142,7 +147,9 @@ fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewMode
 
             //Password
             Spacer(modifier = Modifier.height(18.dp))
-
+            var passVis by remember {
+                mutableStateOf(false)
+            }
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -151,9 +158,21 @@ fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewMode
                     focusedBorderColor = Color(0xFF8C8585),
                     unfocusedBorderColor = Color(0xFF8C8585)
                 ),
+                visualTransformation = if (passVis) VisualTransformation.None else PasswordVisualTransformation(),
                 shape = RoundedCornerShape(15.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (passVis) {
+                        Icons.Filled.Visibility
+                    }else{
+                        Icons.Filled.Visibility
+                    }
+                    IconButton(onClick = { passVis = !passVis }) {
+                        Icon(imageVector = image, contentDescription = null)
+                    }
+                },
                 placeholder = {
-                    Text(text = "Create Password", color = Color(0xFF8C8585))
+                    Text(text = "Password", color = Color(0xFF8C8585))
                 },
                 singleLine = true
             )
@@ -163,10 +182,9 @@ fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewMode
 
             Button(
                 onClick = {
-                    if (email.isNotEmpty() && password.isNotEmpty()){
+                    if (email.isNotEmpty() && password.isNotEmpty()) {
                         viewModel.loginUser(email, password)
-                    }
-                    else{
+                    } else {
                         Toast.makeText(context, "Fill all details", Toast.LENGTH_SHORT).show()
                     }
                 },
