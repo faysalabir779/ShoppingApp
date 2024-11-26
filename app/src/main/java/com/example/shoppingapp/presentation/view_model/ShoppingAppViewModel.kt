@@ -1,12 +1,15 @@
 package com.example.shoppingapp.presentation.view_model
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.shoppingapp.common.ResultState
+import com.example.shoppingapp.domain.model.UserDataParent
 import com.example.shoppingapp.domain.model.UserModel
 import com.example.shoppingapp.domain.repo.ShoppingAppRepo
 import com.example.shoppingapp.domain.use_case.CreateUserUseCase
+import com.example.shoppingapp.domain.use_case.GetUserByIdUseCase
 import com.example.shoppingapp.domain.use_case.LoginUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ShoppingAppViewModel @Inject constructor(
     private val createUserUseCase: CreateUserUseCase,
-    private val loginUserUseCase: LoginUserUseCase
+    private val loginUserUseCase: LoginUserUseCase,
+    private val getUserByIdUseCase: GetUserByIdUseCase
 ): ViewModel()
 {
     private val _signUpState = MutableStateFlow(SignUpState())
@@ -27,6 +31,9 @@ class ShoppingAppViewModel @Inject constructor(
 
     private val _loginState = MutableStateFlow(LoginState())
     val loginState = _loginState.asStateFlow()
+
+    private val _getUserById = MutableStateFlow(GetUser())
+    val getUserById = _getUserById.asStateFlow()
 
     fun createUser(userModel: UserModel){
         viewModelScope.launch {
@@ -66,6 +73,27 @@ class ShoppingAppViewModel @Inject constructor(
         }
     }
 
+    fun getUserById(uid: String){
+        viewModelScope.launch {
+            getUserByIdUseCase.getUserById(uid).collectLatest {
+                when(it){
+                    is ResultState.Error -> {
+                        _getUserById.value = GetUser(error = it.message)
+                    }
+                    is ResultState.Loading -> {
+                        _getUserById.value = GetUser(isLoading = true)
+
+                    }
+                    is ResultState.Success -> {
+                        _getUserById.value = GetUser(isSuccess = it.data)
+                    }
+                }
+                Log.d("issuccess", "getUserById: ${getUserById.value.isSuccess}")
+            }
+
+        }
+    }
+
     fun resetIsSuccess(){
         _signUpState.update {
             it.copy(isSuccess = "")
@@ -84,6 +112,12 @@ class ShoppingAppViewModel @Inject constructor(
         }
     }
 }
+
+data class GetUser(
+    val isLoading: Boolean = false,
+    val isSuccess: UserDataParent? = null,
+    val error: String = ""
+)
 
 
 data class LoginState(

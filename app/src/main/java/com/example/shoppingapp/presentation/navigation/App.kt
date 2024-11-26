@@ -40,7 +40,7 @@ fun App(viewModel: ShoppingAppViewModel, firebaseAuth: FirebaseAuth) {
             }
         }
 
-        navigation<SubNavigation.MainHomeScreenRoute>(startDestination = HomeRoute) {
+        navigation<SubNavigation.MainHomeScreenRoute>(startDestination = ProfileRoute) {
             composable<HomeRoute> {
                 HomeScreen()
             }
@@ -51,7 +51,7 @@ fun App(viewModel: ShoppingAppViewModel, firebaseAuth: FirebaseAuth) {
                 CartScreen()
             }
             composable<ProfileRoute> {
-                ProfileScreen()
+                ProfileScreen(viewModel,firebaseAuth)
             }
         }
 

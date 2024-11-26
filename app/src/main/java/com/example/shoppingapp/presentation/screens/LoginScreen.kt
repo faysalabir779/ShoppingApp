@@ -1,5 +1,6 @@
 package com.example.shoppingapp.presentation.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -56,6 +57,14 @@ fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewMode
 
     val context = LocalContext.current
     val loginState = viewModel.loginState.collectAsStateWithLifecycle().value
+
+    var isSuccessHandled by remember { mutableStateOf(false) }
+    if (loginState.isSuccess == "Success" && !isSuccessHandled){
+        navController.navigate(SubNavigation.MainHomeScreenRoute)
+        isSuccessHandled = true
+        Toast.makeText(context, "Login Successfully", Toast.LENGTH_SHORT).show()
+        viewModel.resetLoginSuccess()
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -172,12 +181,6 @@ fun LoginScreen(navController: NavHostController, viewModel: ShoppingAppViewMode
                 Text(text = "Login", fontSize = 18.sp)
             }
 
-//            if (loginState.isSuccess== "Success"){
-//                navController.navigate(SubNavigation.MainHomeScreenRoute)
-//                viewModel.resetLoginSuccess()
-//                Toast.makeText(context, "Login Successfully", Toast.LENGTH_SHORT).show()
-//
-//            }
 
             Spacer(modifier = Modifier.height(25.dp))
 

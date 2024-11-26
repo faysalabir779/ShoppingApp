@@ -2,6 +2,7 @@ package com.example.shoppingapp.data.repo
 
 import com.example.shoppingapp.common.ResultState
 import com.example.shoppingapp.common.USER_COLLECTION
+import com.example.shoppingapp.domain.model.UserDataParent
 import com.example.shoppingapp.domain.model.UserModel
 import com.example.shoppingapp.domain.repo.ShoppingAppRepo
 import com.google.firebase.auth.FirebaseAuth
@@ -60,4 +61,22 @@ class ShoppingAppRepoImpl @Inject constructor(
                 close()
             }
         }
+
+    override suspend fun getUserById(uid: String): Flow<ResultState<UserDataParent>> = callbackFlow {
+        trySend(ResultState.Loading)
+        firestore.collection(USER_COLLECTION).document(uid).get().addOnCompleteListener{
+            if (it.isSuccessful){
+               val data = it.result.toObject(UserModel::class.java)!!
+                val userDataParent = UserDataParent(it.result.id, data)
+                trySend(ResultState.Success(userDataParent))
+            }else{
+                if (it.exception != null){
+                    trySend(ResultState.Error(it.exception?.localizedMessage.toString()))
+                }
+            }
+        }
+        awaitClose{
+            close()
+        }
+    }
 }
